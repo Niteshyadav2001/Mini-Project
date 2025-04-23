@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Navbar from "../Components/navbar";
+import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import PayUsingScanQR from "../Components/PayUsingScanQR";
 import PayUsingNumber from "../Components/PayUsingNumber";
