@@ -1,52 +1,108 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useDarkMode from '../hooks/useDarkMode';
+import { Menu, X } from 'lucide-react';
 
 const Navbar = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <nav className="w-full flex items-center rounded justify-between px-6 py-4 bg-white text-black shadow-md border-b-2 border-b-black dark:bg-gray-800 dark:text-white dark:border-b-gray-600">
-      {/* Logo on the left */}
-      {/* <div className="text-2xl font-bold">MyFinance</div> */}
-      <Link to="/" className="text-2xl font-bold">
-        MyFinance
-      </Link>
+    <nav className="w-full px-4 py-3 bg-white text-black dark:bg-gray-800 dark:text-white shadow-md border-b dark:border-gray-700">
+      <div className="flex items-center justify-between max-w-7xl mx-auto relative md:hidden">
+        {/* Mobile: Left - Hamburger */}
+        <div className="flex items-center">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
 
+        {/* Mobile: Center - Logo */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <Link to="/" className="text-lg font-bold">
+            MyFinance
+          </Link>
+        </div>
 
-      {/* Center options */}
-      <div className="hidden md:flex gap-10 text-lg">
-      <Link
-          to="/transfer"
-          className="transition-all duration-200 hover:text-blue-600 hover:scale-105 dark:hover:text-blue-400 "
-        >
-          Transfer Money
-        </Link>
-        <Link
-          to="/track-expenses"
-          className="transition-all duration-200 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-105"
-        >
-          Track Expenses
-        </Link>
+        {/* Mobile: Right - Dark mode and Login */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleDarkMode}
+            className="text-base p-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? '🌙' : '☀️'}
+          </button>
+          <Link to="/login">
+            <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600">
+              Login
+            </button>
+          </Link>
+        </div>
       </div>
 
-      {/* Dark mode toggle and login button on the right */}
-      <div className="flex items-center gap-4">
-        {/* Dark Mode Toggle */}
-        <button
-          onClick={toggleDarkMode}
-          className="text-lg cursor-pointer p-2 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-200"
-          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {isDarkMode ? '🌙' : '☀️'}
-        </button>
+      {/* Mobile Links */}
+      {menuOpen && (
+        <div className="md:hidden mt-3 space-y-2 text-sm text-center">
+          <Link
+            to="/transfer"
+            onClick={() => setMenuOpen(false)}
+            className="block py-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700 transition"
+          >
+            Transfer Money
+          </Link>
+          <Link
+            to="/track-expenses"
+            onClick={() => setMenuOpen(false)}
+            className="block py-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700 transition"
+          >
+            Track Expenses
+          </Link>
+        </div>
+      )}
 
-        {/* Login button */}
-        <Link to="/login">
-          <button className="bg-blue-600 cursor-pointer text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-all duration-200 dark:bg-blue-500 dark:hover:bg-blue-600">
-            Login
-          </button>
+      {/* Desktop Layout */}
+      <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto">
+        {/* Left: Logo */}
+        <Link to="/" className="text-lg font-bold">
+          MyFinance
         </Link>
+
+        {/* Center: Links */}
+        <div className="flex gap-10 text-base">
+          <Link
+            to="/transfer"
+            className="transition hover:text-blue-600 dark:hover:text-blue-400 hover:scale-105"
+          >
+            Transfer Money
+          </Link>
+          <Link
+            to="/track-expenses"
+            className="transition hover:text-blue-600 dark:hover:text-blue-400 hover:scale-105"
+          >
+            Track Expenses
+          </Link>
+        </div>
+
+        {/* Right: Dark mode toggle and Login */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleDarkMode}
+            className="text-base p-1 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? '🌙' : '☀️'}
+          </button>
+          <Link to="/login">
+            <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600">
+              Login
+            </button>
+          </Link>
+        </div>
       </div>
     </nav>
   );
