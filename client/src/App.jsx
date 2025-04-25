@@ -4,6 +4,9 @@ import Dashboard from './pages/Dashboard'
 import UserLogin from './pages/UserLogin'
 import Signup from './pages/Signup'
 import TransferMoney from './pages/TransferMoney';
+import ExpenseDashboard from './expenseTracker/ExpenseDashboard';
+import TransactionsHistory from './expenseTracker/TransactionHistory';
+import Manage from './expenseTracker/Manage';
 
 const App = () => {
   return (
@@ -13,6 +16,9 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<UserLogin />} />
         <Route path="/transfer" element={<TransferMoney />} />
+        <Route path="/track-expenses" element={<ExpenseDashboard />} />
+        <Route path="/track-expenses/transactions" element={<TransactionsHistory />} />
+        <Route path="/track-expenses/manage" element={<Manage />} />
       </Routes>
     </Router>
   )
