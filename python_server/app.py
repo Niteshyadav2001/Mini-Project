@@ -1,6 +1,10 @@
 from flask import Flask
+from flask_cors import CORS
 
 app = Flask(__name__)
+
+# Enable CORS
+CORS(app)
 
 import pytesseract
 from pytesseract import Output

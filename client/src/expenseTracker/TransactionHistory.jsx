@@ -19,12 +19,7 @@ const TransactionsHistory = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axios.post(
-          "http://localhost:5000/process-image",
-          {
-            // Example: Replace with actual image data or API call logic
-          }
-        );
+        const response = await axios.get("http://localhost:5000/transactions");
         setTransactions(response.data.transactions);
       } catch (error) {
         console.error("Error fetching transactions:", error);
@@ -43,27 +38,29 @@ const TransactionsHistory = () => {
     setShowDatePicker(!showDatePicker);
   };
 
-  // New function to send data to the backend
-  const sendDataToBackend = async () => {
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
     try {
-      const dataToSend = {
-        dateRange: {
-          startDate: dateRange[0].startDate,
-          endDate: dateRange[0].endDate,
+      const response = await axios.post("http://localhost:5000/process-image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-        transactions,
-      };
+      });
 
-      const response = await axios.post(
-        "http://localhost:5000/update-transactions",
-        dataToSend
-      );
+      console.log("Response from server:", response.data);
 
-      console.log("Response from backend:", response.data);
-      alert("Data successfully sent to the backend!");
+      const newTransactions = response.data.transactions;
+      setTransactions((prevTransactions) => [...prevTransactions, ...newTransactions]);
+      alert("Transactions successfully added!");
     } catch (error) {
-      console.error("Error sending data to backend:", error);
-      alert("Failed to send data to the backend.");
+      console.error("Error uploading image:", error);
+      alert("Failed to process the image.");
+      alert(error);
     }
   };
 
@@ -77,9 +74,19 @@ const TransactionsHistory = () => {
             Transactions History
           </h1>
           <div className="flex flex-row gap-1 sm:gap-2 w-full justify-between sm:w-auto sm:justify-normal">
-            <button className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-3 py-2 sm:px-4 sm:py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm">
-              View
-            </button>
+            <label
+              htmlFor="upload-image"
+              className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-3 py-2 sm:px-4 sm:py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm cursor-pointer"
+            >
+              Upload
+            </label>
+            <input
+              id="upload-image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
             <button className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-3 py-2 sm:px-4 sm:py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm">
               Export CSV
             </button>
@@ -136,7 +143,7 @@ const TransactionsHistory = () => {
                   Date
                 </th>
                 <th className="border border-gray-300 dark:border-[#555] p-3">
-                  Type
+                  Quantity
                 </th>
                 <th className="border border-gray-300 dark:border-[#555] p-3">
                   Amount
@@ -146,20 +153,20 @@ const TransactionsHistory = () => {
             <tbody>
               {transactions.map((transaction, index) => (
                 <tr key={index}>
-                  <td className="border border-gray-300 dark:border-[#555] p-3 hidden sm:table-cell">
-                    {transaction.category}
+                  <td className="border border-gray-300 dark:border-[#555] p-3">
+                    {transaction.Description || "NA"}
                   </td>
                   <td className="border border-gray-300 dark:border-[#555] p-3">
-                    {transaction.description}
+                    {transaction.Item || "NA"}
                   </td>
                   <td className="border border-gray-300 dark:border-[#555] p-3">
-                    {transaction.date}
+                    {new Date().toLocaleDateString()}
                   </td>
                   <td className="border border-gray-300 dark:border-[#555] p-3">
-                    {transaction.type}
+                    {transaction.Quantity || "NA"}
                   </td>
                   <td className="border border-gray-300 dark:border-[#555] p-3">
-                    {transaction.amount}
+                    {transaction.Amount || "NA"}
                   </td>
                 </tr>
               ))}
@@ -174,13 +181,6 @@ const TransactionsHistory = () => {
           </button>
           <button className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-5 py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm">
             Next
-          </button>
-          {/* New Button to Send Data */}
-          <button
-            onClick={sendDataToBackend}
-            className="bg-green-500 text-white px-5 py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm"
-          >
-            Send Data to Backend
           </button>
         </footer>
       </div>
