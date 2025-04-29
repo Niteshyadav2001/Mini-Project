@@ -1,20 +1,49 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
+import { LOG_IN } from "../utils/constants"; 
 
 const UserLogin = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(LOG_IN, formData);
+
+      if (response.status === 200) {
+        // Save token (optional)
+        localStorage.setItem("token", response.data.token);
+        alert(response.data.message);
+        navigate("/dashboard");
+      } else {
+        alert("Login failed");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert(error.response?.data?.message || "Login failed. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      {/* Navbar at the top */}
       <Navbar />
 
-      {/* Login Form Section */}
       <div className="flex justify-center items-center py-20">
         <div className="w-full max-w-sm bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800 dark:text-white">Login</h2>
 
-          <form action="#" method="POST">
+          <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label htmlFor="email" className="block text-gray-700 dark:text-gray-300">
                 Email
@@ -23,6 +52,8 @@ const UserLogin = () => {
                 type="email"
                 id="email"
                 name="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 required
               />
@@ -36,6 +67,8 @@ const UserLogin = () => {
                 type="password"
                 id="password"
                 name="password"
+                value={formData.password}
+                onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 required
               />
@@ -66,7 +99,6 @@ const UserLogin = () => {
         </div>
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

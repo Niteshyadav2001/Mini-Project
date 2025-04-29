@@ -19,6 +19,7 @@ const App = () => {
         <Route path="/track-expenses" element={<ExpenseDashboard />} />
         <Route path="/track-expenses/transactions" element={<TransactionsHistory />} />
         <Route path="/track-expenses/manage" element={<Manage />} />
+        <Route path="/dashboard" element={<Dashboard/>} />
       </Routes>
     </Router>
   )

@@ -1,68 +1,96 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
+import { SIGN_IN } from "../utils/constants";
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(SIGN_IN, formData);
+
+      if (response.status === 201 || response.status === 200) {
+        navigate("/dashboard");
+      } else {
+        alert("Signup failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert(error.response?.data?.message || "Signup failed. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-      {/* Navbar at the top */}
       <Navbar />
 
-      {/* Signup Form Section */}
       <div className="flex justify-center items-center py-20">
         <div className="w-full max-w-sm bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800 dark:text-white">Sign Up</h2>
 
-          {/* Signup Form */}
-          <form action="#" method="POST">
+          <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="fullName" className="block text-gray-700 dark:text-gray-300">
-                Full Name
-              </label>
+              <label htmlFor="name" className="block text-gray-700 dark:text-gray-300">Full Name</label>
               <input
                 type="text"
-                id="fullName"
-                name="fullName"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 required
               />
             </div>
 
             <div className="mb-4">
-              <label htmlFor="email" className="block text-gray-700 dark:text-gray-300">
-                Email
-              </label>
+              <label htmlFor="email" className="block text-gray-700 dark:text-gray-300">Email</label>
               <input
                 type="email"
                 id="email"
                 name="email"
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 required
               />
             </div>
 
             <div className="mb-4">
-              <label htmlFor="password" className="block text-gray-700 dark:text-gray-300">
-                Password
-              </label>
+              <label htmlFor="password" className="block text-gray-700 dark:text-gray-300">Password</label>
               <input
                 type="password"
                 id="password"
                 name="password"
+                value={formData.password}
+                onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 required
               />
             </div>
 
             <div className="mb-6">
-              <label htmlFor="confirmPassword" className="block text-gray-700 dark:text-gray-300">
-                Confirm Password
-              </label>
+              <label htmlFor="phone" className="block text-gray-700 dark:text-gray-300">Phone Number</label>
               <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 required
               />
@@ -87,7 +115,6 @@ const Signup = () => {
         </div>
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
   );
