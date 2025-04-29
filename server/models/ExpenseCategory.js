@@ -8,6 +8,7 @@ const expenseCategorySchema = new mongoose.Schema(
       required: true,
     },
     name: { type: String, required: true },
+    totalExpense: { type: Number, default: 0 }, // New field to track total expense for this category
   },
   { timestamps: true }
 );

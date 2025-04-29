@@ -1,2 +1,11 @@
 export const SIGN_IN="http://localhost:3000/api/auth/signup"
-export const LOG_IN="http://localhost:3000/api/auth/login"
+export const LOG_IN="http://localhost:3000/api/auth/login";
+export const CREATE_INCOME_CATEGORY="http://localhost:3000/api/auth/category/income"
+export const CREATE_EXPENSE_CATEGORY="http://localhost:3000/api/auth/category/expense"
+export const ADD_INCOME_TO_CATEGORY="http://localhost:3000/api/auth/category/income/add"
+export const ADD_EXPENSE_TO_CATEGORY="http://localhost:3000/api/auth/category/expense/add"
+export const GET_INCOME_CATEGORIES="http://localhost:3000/api/auth/category/income"
+export const GET_EXPENSE_CATEGORIES="http://localhost:3000/api/auth/category/expense"
+export const GET_EXPENSE_INCOME="http://localhost:3000/api/auth/user/income-expense"
+export const GET_INCOME_BY_CATEGORY="http://localhost:3000/api/auth/income-by-category"
+export const GET_EXPENSE_BY_CATEGORY="http://localhost:3000/api/auth/expense-by-category"

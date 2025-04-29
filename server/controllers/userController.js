@@ -28,7 +28,7 @@ const signup = async (req, res) => {
 
     // Generate JWT Token
     const token = jwt.sign({ id: newUser._id }, JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "20d",
     });
 
     res.status(201).json({ message: "User registered successfully", token });
@@ -56,7 +56,7 @@ async function login(req, res) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
     // Generate JWT Token
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "20d" });
 
     res
       .status(200)
@@ -86,5 +86,27 @@ async function createCategory(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+const getUserIncomeAndExpense = async (req, res) => {
+  const userId = req.userId; // Assuming userId is set in the request by authentication middleware
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId, "income expense");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return the user's income and expense
+    res.status(200).json({
+      income: user.income,
+      expense: user.expense,
+      balance: user.income - user.expense,
+    });
+  } catch (error) {
+    console.error("Error fetching user's income and expense:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 // Export the functions
-export { signup, login, createCategory };
+export { signup, login, createCategory,getUserIncomeAndExpense };

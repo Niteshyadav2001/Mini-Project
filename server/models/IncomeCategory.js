@@ -8,6 +8,7 @@ const incomeCategorySchema = new mongoose.Schema(
       required: true,
     },
     name: { type: String, required: true },
+    totalIncome: { type: Number, default: 0 }, // New field to track total income for this category
   },
   { timestamps: true }
 );
