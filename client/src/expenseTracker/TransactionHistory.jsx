@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ExpenseNavbar from "./ExpenseNavbar";
 import { DateRangePicker } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import axios from "axios";
 
 const TransactionsHistory = () => {
   const [dateRange, setDateRange] = useState([
@@ -13,37 +14,25 @@ const TransactionsHistory = () => {
     },
   ]);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [transactions, setTransactions] = useState([]);
 
-  const dummyTransactions = [
-    {
-      category: "Food",
-      description: "Lunch at restaurant",
-      date: "2025-04-01",
-      type: "Expense",
-      amount: "$15.00",
-    },
-    {
-      category: "Salary",
-      description: "Monthly salary",
-      date: "2025-04-02",
-      type: "Income",
-      amount: "$2000.00",
-    },
-    {
-      category: "Transport",
-      description: "Bus ticket",
-      date: "2025-04-03",
-      type: "Expense",
-      amount: "$2.50",
-    },
-    {
-      category: "Shopping",
-      description: "Clothes",
-      date: "2025-04-04",
-      type: "Expense",
-      amount: "$50.00",
-    },
-  ];
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/process-image",
+          {
+            // Example: Replace with actual image data or API call logic
+          }
+        );
+        setTransactions(response.data.transactions);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
 
   const handleDateChange = (ranges) => {
     setDateRange([ranges.selection]);
@@ -52,6 +41,30 @@ const TransactionsHistory = () => {
 
   const toggleDatePicker = () => {
     setShowDatePicker(!showDatePicker);
+  };
+
+  // New function to send data to the backend
+  const sendDataToBackend = async () => {
+    try {
+      const dataToSend = {
+        dateRange: {
+          startDate: dateRange[0].startDate,
+          endDate: dateRange[0].endDate,
+        },
+        transactions,
+      };
+
+      const response = await axios.post(
+        "http://localhost:5000/update-transactions",
+        dataToSend
+      );
+
+      console.log("Response from backend:", response.data);
+      alert("Data successfully sent to the backend!");
+    } catch (error) {
+      console.error("Error sending data to backend:", error);
+      alert("Failed to send data to the backend.");
+    }
   };
 
   return (
@@ -113,21 +126,41 @@ const TransactionsHistory = () => {
           <table className="min-w-full text-left border-collapse border border-gray-300 dark:border-[#555] bg-white dark:bg-[#1e1e1e] text-sm">
             <thead>
               <tr className="bg-gray-200 dark:bg-[#333] text-yellow-700 dark:text-[#ffcc00] font-bold">
-                <th className="border border-gray-300 dark:border-[#555] p-3 hidden sm:table-cell">Category</th>
-                <th className="border border-gray-300 dark:border-[#555] p-3">Description</th>
-                <th className="border border-gray-300 dark:border-[#555] p-3">Date</th>
-                <th className="border border-gray-300 dark:border-[#555] p-3">Type</th>
-                <th className="border border-gray-300 dark:border-[#555] p-3">Amount</th>
+                <th className="border border-gray-300 dark:border-[#555] p-3 hidden sm:table-cell">
+                  Category
+                </th>
+                <th className="border border-gray-300 dark:border-[#555] p-3">
+                  Description
+                </th>
+                <th className="border border-gray-300 dark:border-[#555] p-3">
+                  Date
+                </th>
+                <th className="border border-gray-300 dark:border-[#555] p-3">
+                  Type
+                </th>
+                <th className="border border-gray-300 dark:border-[#555] p-3">
+                  Amount
+                </th>
               </tr>
             </thead>
             <tbody>
-              {dummyTransactions.map((transaction, index) => (
+              {transactions.map((transaction, index) => (
                 <tr key={index}>
-                  <td className="border border-gray-300 dark:border-[#555] p-3 hidden sm:table-cell">{transaction.category}</td>
-                  <td className="border border-gray-300 dark:border-[#555] p-3">{transaction.description}</td>
-                  <td className="border border-gray-300 dark:border-[#555] p-3">{transaction.date}</td>
-                  <td className="border border-gray-300 dark:border-[#555] p-3">{transaction.type}</td>
-                  <td className="border border-gray-300 dark:border-[#555] p-3">{transaction.amount}</td>
+                  <td className="border border-gray-300 dark:border-[#555] p-3 hidden sm:table-cell">
+                    {transaction.category}
+                  </td>
+                  <td className="border border-gray-300 dark:border-[#555] p-3">
+                    {transaction.description}
+                  </td>
+                  <td className="border border-gray-300 dark:border-[#555] p-3">
+                    {transaction.date}
+                  </td>
+                  <td className="border border-gray-300 dark:border-[#555] p-3">
+                    {transaction.type}
+                  </td>
+                  <td className="border border-gray-300 dark:border-[#555] p-3">
+                    {transaction.amount}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -141,6 +174,13 @@ const TransactionsHistory = () => {
           </button>
           <button className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-5 py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm">
             Next
+          </button>
+          {/* New Button to Send Data */}
+          <button
+            onClick={sendDataToBackend}
+            className="bg-green-500 text-white px-5 py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm"
+          >
+            Send Data to Backend
           </button>
         </footer>
       </div>
