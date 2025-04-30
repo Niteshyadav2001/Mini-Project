@@ -19,7 +19,7 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-3">Contact</h3>
             <ul>
-              <li><a href="mailto:contact@myfinance.com" className="hover:text-blue-400">Email Us</a></li>
+              <li><a href="mailto:contact@PayTrack.com" className="hover:text-blue-400">Email Us</a></li>
               <li><a href="tel:+1234567890" className="hover:text-blue-400">Call Us</a></li>
             </ul>
           </div>
@@ -46,7 +46,7 @@ const Footer = () => {
 
         {/* Footer Bottom */}
         <div className="mt-8 text-center text-sm">
-          <p>&copy; 2025 MyFinance. All rights reserved.</p>
+          <p>&copy; 2025 PayTrack. All rights reserved.</p>
         </div>
       </div>
     </footer>

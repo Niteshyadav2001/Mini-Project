@@ -31,7 +31,7 @@ const ExpenseNavbar = () => {
         {/* Center: Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <Link to="/" className="text-lg font-bold text-[#f0a500]">
-            MyFinance
+            PayTrack
           </Link>
         </div>
 
@@ -92,7 +92,7 @@ const ExpenseNavbar = () => {
       <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto">
         {/* Logo */}
         <Link to="/" className="text-lg font-bold text-[#f0a500]">
-          MyFinance
+          PayTrack
         </Link>
 
         {/* Nav Links */}

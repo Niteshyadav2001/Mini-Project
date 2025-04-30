@@ -5,6 +5,10 @@ import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import axios from "axios";
 import { GET_ALL_TRANSACTIONS, ADD_TRANSACTION } from "../utils/constants";
+import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import Chart from "chart.js/auto";
 
 const TransactionsHistory = () => {
   const [dateRange, setDateRange] = useState([
@@ -24,6 +28,7 @@ const TransactionsHistory = () => {
     quantity: "",
     amount: "",
   });
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -78,6 +83,81 @@ const TransactionsHistory = () => {
     }
   };
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await axios.post("http://localhost:5000/process-image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log("Response from server:", response.data);
+
+      const newTransactions = response.data.transactions.map((transaction) => ({
+        category: "ExpenseCategory", // Default category for photo uploads
+        description: transaction.Item || "No Description",
+        date: new Date().toISOString(), // Use the current date if no date is provided
+        quantity: transaction.Quantity || 0,
+        amount: transaction.Amount || 0,
+      }));
+
+      setTransactions((prevTransactions) => [...prevTransactions, ...newTransactions]);
+
+      // Show data received from the Python server in an alert
+      const formattedData = newTransactions
+        .map(
+          (transaction) =>
+            `Item: ${transaction.description}, Quantity: ${transaction.quantity}, Amount: ₹${transaction.amount}`
+        )
+        .join("\n");
+
+      alert(`Data received from server:\n${formattedData}`);
+
+      alert("Transactions successfully added!");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      alert("Failed to process the image.");
+    }
+  };
+
+  const handleExportCSV = () => {
+    const csvContent = [
+      ["Category", "Description", "Date", "Quantity", "Amount"],
+      ...transactions.map((transaction) => [
+        transaction.category || "NA",
+        transaction.description || "NA",
+        new Date(transaction.date).toLocaleDateString() || "NA",
+        transaction.quantity || "NA",
+        transaction.amount || "NA",
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "transactions.csv");
+  };
+
+  // Ensure the element exists and is visible before capturing it
+  const captureElement = async (element) => {
+    if (!element) {
+      console.error("Element not found for html2canvas");
+      return null;
+    }
+    const style = window.getComputedStyle(element);
+    if (style.display === "none" || style.visibility === "hidden") {
+      console.error("Element is not visible for html2canvas");
+      return null;
+    }
+    return await html2canvas(element);
+  };
+
   return (
     <>
       <ExpenseNavbar />
@@ -87,12 +167,33 @@ const TransactionsHistory = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-[#ffcc00]">
             Transactions History
           </h1>
-          <button
-            onClick={() => setShowAddTransactionCard(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold text-sm"
-          >
-            Add Transaction
-          </button>
+          <div className="flex flex-row gap-1 sm:gap-2 w-full justify-between sm:w-auto sm:justify-normal">
+            <label
+              htmlFor="upload-image"
+              className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-3 py-2 sm:px-4 sm:py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm cursor-pointer"
+            >
+              Upload
+            </label>
+            <input
+              id="upload-image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <button
+              className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-3 py-2 sm:px-4 sm:py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm"
+              onClick={handleExportCSV}
+            >
+              Export CSV
+            </button>
+            <button
+              onClick={() => setShowAddTransactionCard(true)}
+              className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-4 py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm"
+            >
+              + Add Transaction
+            </button>
+          </div>
         </header>
 
         {/* Add Transaction Card */}
@@ -169,7 +270,7 @@ const TransactionsHistory = () => {
         )}
 
         {/* Transactions Table */}
-        <div className="overflow-x-auto mt-4">
+        <div className="overflow-x-auto mt-4 transactions-table">
           <table className="min-w-full text-left border-collapse border border-gray-300 dark:border-[#555] bg-white dark:bg-[#1e1e1e] text-sm">
             <thead>
               <tr className="bg-gray-200 dark:bg-[#333] text-yellow-700 dark:text-[#ffcc00] font-bold">

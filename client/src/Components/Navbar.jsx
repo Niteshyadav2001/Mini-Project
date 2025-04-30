@@ -32,7 +32,7 @@ const Navbar = () => {
         {/* Mobile: Center - Logo */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <Link to="/" className="text-lg font-bold">
-            MyFinance
+            PayTrack
           </Link>
         </div>
 
@@ -86,7 +86,7 @@ const Navbar = () => {
       <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto">
         {/* Left: Logo */}
         <Link to="/" className="text-lg font-bold">
-          MyFinance
+          PayTrack
         </Link>
 
         {/* Center: Links */}

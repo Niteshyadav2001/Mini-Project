@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Doughnut } from "react-chartjs-2";
+import { Doughnut, Bar, Line, Radar, PolarArea, Pie, Bubble, Scatter } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import ExpenseNavbar from "./ExpenseNavbar";
 import {
@@ -128,6 +128,75 @@ const ExpenseDashboard = () => {
         data: expenseData.map((item) => item.totalExpense),
         backgroundColor: generateRandomColors(expenseData.length),
         borderWidth: 1,
+      },
+    ],
+  };
+
+  // Replace random data with meaningful comparisons
+  const indiaSpendingData = {
+    income: 50000,
+    expense: 40000,
+    categories: [
+      { name: "Food", expense: 15000 },
+      { name: "Transport", expense: 8000 },
+      { name: "Entertainment", expense: 5000 },
+      { name: "Healthcare", expense: 7000 },
+      { name: "Education", expense: 5000 },
+    ],
+  };
+
+  // Prepare data for bar chart (User vs India Income and Expense)
+  const barChartData = {
+    labels: ["Income", "Expense"],
+    datasets: [
+      {
+        label: "User",
+        data: [overview.income, overview.expense],
+        backgroundColor: "#36A2EB",
+      },
+      {
+        label: "India",
+        data: [indiaSpendingData.income, indiaSpendingData.expense],
+        backgroundColor: "#FF6384",
+      },
+    ],
+  };
+
+  // Prepare data for doughnut chart (User vs India Expense by Category)
+  const expenseComparisonData = {
+    labels: indiaSpendingData.categories.map((item) => item.name),
+    datasets: [
+      {
+        label: "User",
+        data: expenseData.map((item) => item.totalExpense),
+        backgroundColor: generateRandomColors(expenseData.length),
+      },
+      {
+        label: "India",
+        data: indiaSpendingData.categories.map((item) => item.expense),
+        backgroundColor: generateRandomColors(indiaSpendingData.categories.length),
+      },
+    ],
+  };
+
+  // Prepare data for scatter chart (User vs India Spending Trends)
+  const scatterChartData = {
+    datasets: [
+      {
+        label: "User",
+        data: expenseData.map((item, index) => ({
+          x: index,
+          y: item.totalExpense,
+        })),
+        backgroundColor: "#36A2EB",
+      },
+      {
+        label: "India",
+        data: indiaSpendingData.categories.map((item, index) => ({
+          x: index,
+          y: item.expense,
+        })),
+        backgroundColor: "#FF6384",
       },
     ],
   };
@@ -264,9 +333,12 @@ const ExpenseDashboard = () => {
         </div>
 
         {/* Category Breakdown */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-center shadow-sm dark:shadow-none">
             <h3 className="mb-4 text-lg font-medium">Incomes by category</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
+              This chart shows the distribution of your income across different categories.
+            </p>
             {incomeData.length > 0 ? (
               <Doughnut data={incomeChartData} />
             ) : (
@@ -277,6 +349,9 @@ const ExpenseDashboard = () => {
           </div>
           <div className="p-4 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-center shadow-sm dark:shadow-none">
             <h3 className="mb-4 text-lg font-medium">Expenses by category</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
+              This chart shows the distribution of your expenses across different categories.
+            </p>
             {expenseData.length > 0 ? (
               <Doughnut data={expenseChartData} />
             ) : (
@@ -284,6 +359,27 @@ const ExpenseDashboard = () => {
                 No data for the selected period
               </p>
             )}
+          </div>
+          <div className="p-4 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-center shadow-sm dark:shadow-none">
+            <h3 className="mb-4 text-lg font-medium">User vs India Income and Expense</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
+              This bar chart compares your income and expenses with the average income and expenses in India.
+            </p>
+            <Bar data={barChartData} />
+          </div>
+          <div className="p-4 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-center shadow-sm dark:shadow-none">
+            <h3 className="mb-4 text-lg font-medium">User vs India Expense by Category</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
+              This chart compares your spending in different categories with the average spending in India.
+            </p>
+            <Doughnut data={expenseComparisonData} />
+          </div>
+          <div className="p-4 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-center shadow-sm dark:shadow-none">
+            <h3 className="mb-4 text-lg font-medium">User vs India Spending Trends</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-300 mb-4">
+              This scatter chart shows the trends in your spending compared to the average spending trends in India.
+            </p>
+            <Scatter data={scatterChartData} />
           </div>
         </div>
       </div>
