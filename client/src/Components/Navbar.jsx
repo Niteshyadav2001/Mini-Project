@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useDarkMode from '../hooks/useDarkMode';
 import { Menu, X } from 'lucide-react';
 
 const Navbar = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token')); // Check if user is logged in
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Remove token from localStorage
+    setIsLoggedIn(false); // Update state
+    navigate('/login'); // Redirect to login page
+  };
 
   return (
     <nav className="w-full px-4 py-3 bg-white text-black dark:bg-gray-800 dark:text-white shadow-md border-b dark:border-gray-700">
@@ -28,7 +36,7 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Mobile: Right - Dark mode and Login */}
+        {/* Mobile: Right - Dark mode and Login/Logout */}
         <div className="flex items-center gap-2">
           <button
             onClick={toggleDarkMode}
@@ -37,11 +45,20 @@ const Navbar = () => {
           >
             {isDarkMode ? '🌙' : '☀️'}
           </button>
-          <Link to="/login">
-            <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600">
-              Login
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="text-sm bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition dark:bg-red-500 dark:hover:bg-red-600"
+            >
+              Logout
             </button>
-          </Link>
+          ) : (
+            <Link to="/login">
+              <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600">
+                Login
+              </button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -88,7 +105,7 @@ const Navbar = () => {
           </Link>
         </div>
 
-        {/* Right: Dark mode toggle and Login */}
+        {/* Right: Dark mode toggle and Login/Logout */}
         <div className="flex items-center gap-2">
           <button
             onClick={toggleDarkMode}
@@ -97,11 +114,20 @@ const Navbar = () => {
           >
             {isDarkMode ? '🌙' : '☀️'}
           </button>
-          <Link to="/login">
-            <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600">
-              Login
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="text-sm bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700 transition dark:bg-red-500 dark:hover:bg-red-600"
+            >
+              Logout
             </button>
-          </Link>
+          ) : (
+            <Link to="/login">
+              <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition dark:bg-blue-500 dark:hover:bg-blue-600">
+                Login
+              </button>
+            </Link>
+          )}
         </div>
       </div>
     </nav>

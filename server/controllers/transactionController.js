@@ -65,57 +65,95 @@ export const sendMoney = async (req, res) => {
 };
 
 export const addTransaction = async (req, res) => {
-  const { category, description, date, quantity, amount } = req.body;
-
-  // Validate required fields
-  if (!category || !description || !date || !quantity || !amount) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-
-  try {
-    // Create a new transaction
-    const transaction = new Transaction({
-      userId: req.userId, // Assuming userId is retrieved from authentication middleware
-      categoryId: 100, // Example categoryId (can be dynamic if needed)
-      categoryType: category, // Either "IncomeCategory" or "ExpenseCategory"
-      description,
-      date,
-      quantity,
-      amount,
-    });
-
-    // Save the transaction to the database
-    await transaction.save();
-
-    // Update the user's expense if the category is "ExpenseCategory"
-    if (category === "ExpenseCategory") {
-      const user = await User.findById(req.userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      user.expense += Number(amount);
-      await user.save();
+    const { category, description, date, quantity, amount } = req.body;
+  
+    // Validate required fields
+    if (!category || !description || !date || !quantity || !amount) {
+      return res.status(400).json({ message: "All fields are required" });
     }
-    if (category === "IncomeCategory") {
-      const user = await User.findById(req.userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+  
+    try {
+      // Create a new transaction
+      const transaction = new Transaction({
+        userId: req.userId, // Assuming userId is retrieved from authentication middleware
+        categoryId: 100, // Example categoryId (can be dynamic if needed)
+        categoryType: category, // Either "IncomeCategory" or "ExpenseCategory"
+        description,
+        date,
+        quantity,
+        amount,
+      });
+  
+      // Save the transaction to the database
+      await transaction.save();
+  
+      if (category === "ExpenseCategory") {
+        // Update the user's expense
+        const user = await User.findById(req.userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+  
+        user.expense += Number(amount);
+        await user.save();
+  
+        // Add or update the expense category
+        const expenseCategory = await ExpenseCategory.findOne({
+          userId: req.userId,
+          name: description, // Assuming description is the category name
+        });
+  
+        if (expenseCategory) {
+          expenseCategory.totalExpense += Number(amount);
+          await expenseCategory.save();
+        } else {
+          const newExpenseCategory = new ExpenseCategory({
+            userId: req.userId,
+            name: description,
+            totalExpense: Number(amount),
+          });
+          await newExpenseCategory.save();
+        }
       }
-
-      user.income += Number(amount);
-      await user.save();
+  
+      if (category === "IncomeCategory") {
+        // Update the user's income
+        const user = await User.findById(req.userId);
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+  
+        user.income += Number(amount);
+        await user.save();
+  
+        // Add or update the income category
+        const incomeCategory = await IncomeCategory.findOne({
+          userId: req.userId,
+          name: description, // Assuming description is the category name
+        });
+  
+        if (incomeCategory) {
+          incomeCategory.totalIncome += Number(amount);
+          await incomeCategory.save();
+        } else {
+          const newIncomeCategory = new IncomeCategory({
+            userId: req.userId,
+            name: description,
+            totalIncome: Number(amount),
+          });
+          await newIncomeCategory.save();
+        }
+      }
+  
+      res.status(201).json({
+        message: "Transaction added successfully",
+        transaction,
+      });
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
-
-    res.status(201).json({
-      message: "Transaction added successfully",
-      transaction,
-    });
-  } catch (error) {
-    console.error("Error adding transaction:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+  };
 export const getAllTransactions = async (req, res) => {
   try {
     // Fetch all transactions for the authenticated user
