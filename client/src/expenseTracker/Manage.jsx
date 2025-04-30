@@ -3,7 +3,7 @@ import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
 import axios from "axios";
 import ExpenseNavbar from "./ExpenseNavbar";
-import { CREATE_EXPENSE_CATEGORY, CREATE_INCOME_CATEGORY,GET_EXPENSE_CATEGORIES,GET_INCOME_CATEGORIES } from "../utils/constants";
+import { CREATE_EXPENSE_CATEGORY,GET_MONTHLY_COMPARISON, CREATE_INCOME_CATEGORY,GET_EXPENSE_CATEGORIES,GET_INCOME_CATEGORIES } from "../utils/constants";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -35,10 +35,12 @@ const Manage = () => {
 
   const fetchMonthlyData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/category/monthly-comparison", {
+      const response = await axios.get(GET_MONTHLY_COMPARISON, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setMonthlyData(response.data);
+      console.log(response.data);
+      
     } catch (error) {
       console.error("Error fetching monthly data:", error);
     }

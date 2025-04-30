@@ -1,14 +1,17 @@
-import Transaction from '../models/Transaction.js';
-import IncomeCategory from '../models/IncomeCategory.js';
-import ExpenseCategory from '../models/ExpenseCategory.js';
+import Transaction from "../models/Transaction.js";
+import IncomeCategory from "../models/IncomeCategory.js";
+import ExpenseCategory from "../models/ExpenseCategory.js";
 import User from "../models/User.js";
+import mongoose from "mongoose";
 
 export const sendMoney = async (req, res) => {
   const { phoneNumber, amount, message } = req.body;
   const sendingUserId = req.userId; // Retrieved from authentication middleware
 
   if (!phoneNumber || !amount) {
-    return res.status(400).json({ message: "Phone number and amount are required" });
+    return res
+      .status(400)
+      .json({ message: "Phone number and amount are required" });
   }
 
   try {
@@ -61,35 +64,120 @@ export const sendMoney = async (req, res) => {
   }
 };
 
-export const createTransaction = async (req, res) => {
-    const { categoryId, categoryType, description, date, amount } = req.body;
-    const userId = req.userId; // Retrieved from authMiddleware
+export const addTransaction = async (req, res) => {
+  const { category, description, date, quantity, amount } = req.body;
 
-    if (!categoryId || !categoryType || !description || !date || !amount) {
-        return res.status(400).json({ message: "All fields are required" });
+  // Validate required fields
+  if (!category || !description || !date || !quantity || !amount) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  try {
+    // Create a new transaction
+    const transaction = new Transaction({
+      userId: req.userId, // Assuming userId is retrieved from authentication middleware
+      categoryId: 100, // Example categoryId (can be dynamic if needed)
+      categoryType: category, // Either "IncomeCategory" or "ExpenseCategory"
+      description,
+      date,
+      quantity,
+      amount,
+    });
+
+    // Save the transaction to the database
+    await transaction.save();
+
+    // Update the user's expense if the category is "ExpenseCategory"
+    if (category === "ExpenseCategory") {
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      user.expense += Number(amount);
+      await user.save();
+    }
+    if (category === "IncomeCategory") {
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      user.income += Number(amount);
+      await user.save();
     }
 
-    // Ensure categoryType is valid
-    if (!['IncomeCategory', 'ExpenseCategory'].includes(categoryType)) {
-        return res.status(400).json({ message: "Invalid categoryType. Use 'IncomeCategory' or 'ExpenseCategory'." });
-    }
-
-    try {
-        // Check if categoryId exists in the correct model
-        const categoryExists = categoryType === 'IncomeCategory' 
-            ? await IncomeCategory.findById(categoryId) 
-            : await ExpenseCategory.findById(categoryId);
-
-        if (!categoryExists) {
-            return res.status(400).json({ message: "Category does not exist" });
-        }
-
-        const transaction = new Transaction({ userId, categoryId, categoryType, description, date, amount });
-        await transaction.save();
-
-        res.status(201).json({ message: "Transaction recorded successfully", transaction });
-    } catch (error) {
-        console.error("Transaction creation error:", error);
-        res.status(500).json({ message: "Internal server error" });
-    }
+    res.status(201).json({
+      message: "Transaction added successfully",
+      transaction,
+    });
+  } catch (error) {
+    console.error("Error adding transaction:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
+export const getAllTransactions = async (req, res) => {
+  try {
+    // Fetch all transactions for the authenticated user
+    const transactions = await Transaction.find({ userId: req.userId })
+      .populate("userId", "name") // Populate user details if needed
+      .select("categoryType description date quantity amount"); // Select only the required fields
+
+    // Format the response
+    const formattedTransactions = transactions.map((transaction) => ({
+      category: transaction.categoryType,
+      description: transaction.description,
+      date: transaction.date,
+      quantity: transaction.quantity,
+      amount: transaction.amount,
+    }));
+
+    res.status(200).json(formattedTransactions);
+  } catch (error) {
+    console.error("Error fetching transactions:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getMonthlyComparison = async (req, res) => {
+    try {
+      const userId = req.userId; // Assuming userId is retrieved from authentication middleware
+  
+      // Aggregate income data grouped by month
+      const incomeData = await IncomeCategory.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(userId) } }, // Match documents for the authenticated user
+        {
+          $group: {
+            _id: { $month: "$createdAt" }, // Group by month
+            totalIncome: { $sum: "$totalIncome" }, // Sum the totalIncome field
+          },
+        },
+        { $sort: { "_id": 1 } }, // Sort by month
+      ]);
+  
+      // Aggregate expense data grouped by month
+      const expenseData = await ExpenseCategory.aggregate([
+        { $match: { userId:new mongoose.Types.ObjectId(userId) } }, // Match documents for the authenticated user
+        {
+          $group: {
+            _id: { $month: "$createdAt" }, // Group by month
+            totalExpense: { $sum: "$totalExpense" }, // Sum the totalExpense field
+          },
+        },
+        { $sort: { "_id": 1 } }, // Sort by month
+      ]);
+  
+      // Combine income and expense data into a single array
+      const monthlyComparison = [];
+      for (let i = 1; i <= 12; i++) {
+        const income = incomeData.find((data) => data._id === i)?.totalIncome || 0;
+        const expense = expenseData.find((data) => data._id === i)?.totalExpense || 0;
+        monthlyComparison.push({ month: i, income, expense });
+      }
+  
+      res.status(200).json(monthlyComparison);
+    } catch (error) {
+      console.error("Error fetching monthly comparison:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };

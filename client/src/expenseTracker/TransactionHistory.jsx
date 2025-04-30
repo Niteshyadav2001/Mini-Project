@@ -4,6 +4,7 @@ import { DateRangePicker } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import axios from "axios";
+import { GET_ALL_TRANSACTIONS, ADD_TRANSACTION } from "../utils/constants";
 
 const TransactionsHistory = () => {
   const [dateRange, setDateRange] = useState([
@@ -15,12 +16,24 @@ const TransactionsHistory = () => {
   ]);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [transactions, setTransactions] = useState([]);
+  const [showAddTransactionCard, setShowAddTransactionCard] = useState(false);
+  const [newTransaction, setNewTransaction] = useState({
+    category: "",
+    description: "",
+    date: "",
+    quantity: "",
+    amount: "",
+  });
 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/transactions");
-        setTransactions(response.data.transactions);
+        const response = await axios.get(GET_ALL_TRANSACTIONS, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming JWT is used
+          },
+        });
+        setTransactions(response.data); // Assuming the API returns an array of transactions
       } catch (error) {
         console.error("Error fetching transactions:", error);
       }
@@ -38,29 +51,30 @@ const TransactionsHistory = () => {
     setShowDatePicker(!showDatePicker);
   };
 
-  const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("image", file);
-
+  const handleAddTransaction = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/process-image", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      const response = await axios.post(
+        ADD_TRANSACTION,
+        newTransaction,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      alert(response.data.message || "Transaction added successfully!");
+      setTransactions((prev) => [...prev, response.data.transaction]);
+      setShowAddTransactionCard(false);
+      setNewTransaction({
+        category: "",
+        description: "",
+        date: "",
+        quantity: "",
+        amount: "",
       });
-
-      console.log("Response from server:", response.data);
-
-      const newTransactions = response.data.transactions;
-      setTransactions((prevTransactions) => [...prevTransactions, ...newTransactions]);
-      alert("Transactions successfully added!");
     } catch (error) {
-      console.error("Error uploading image:", error);
-      alert("Failed to process the image.");
-      alert(error);
+      console.error("Error adding transaction:", error);
+      alert("Failed to add transaction. Please try again.");
     }
   };
 
@@ -73,67 +87,93 @@ const TransactionsHistory = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-[#ffcc00]">
             Transactions History
           </h1>
-          <div className="flex flex-row gap-1 sm:gap-2 w-full justify-between sm:w-auto sm:justify-normal">
-            <label
-              htmlFor="upload-image"
-              className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-3 py-2 sm:px-4 sm:py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm cursor-pointer"
-            >
-              Upload
-            </label>
-            <input
-              id="upload-image"
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-            <button className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-3 py-2 sm:px-4 sm:py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm">
-              Export CSV
-            </button>
-          </div>
+          <button
+            onClick={() => setShowAddTransactionCard(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold text-sm"
+          >
+            Add Transaction
+          </button>
         </header>
 
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="flex gap-2 flex-wrap">
-            <button className="bg-gray-200 dark:bg-[#333] dark:text-white text-black px-4 py-2 rounded font-bold hover:bg-gray-300 dark:hover:bg-[#555] text-sm hidden sm:block">
-              + Category
-            </button>
-            <button className="bg-gray-200 dark:bg-[#333] dark:text-white text-black px-4 py-2 rounded font-bold hover:bg-gray-300 dark:hover:bg-[#555] text-sm">
-              + Type
-            </button>
-          </div>
+        {/* Add Transaction Card */}
+        {showAddTransactionCard && (
+          <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-xl shadow-lg max-w-md mx-auto">
+            <h2 className="text-xl font-semibold mb-4">Add Transaction</h2>
+            <div className="space-y-4">
+              {/* Dropdown for Category */}
+              <select
+                value={newTransaction.category}
+                onChange={(e) =>
+                  setNewTransaction({ ...newTransaction, category: e.target.value })
+                }
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white"
+              >
+                <option value="" disabled>
+                  Select Category
+                </option>
+                <option value="IncomeCategory">IncomeCategory</option>
+                <option value="ExpenseCategory">ExpenseCategory</option>
+              </select>
 
-          {/* Date Picker */}
-          <div className="relative">
-            <div className="bg-gray-100 dark:bg-[#444] px-4 py-2 rounded font-bold text-yellow-600 dark:text-[#ffcc00] text-sm w-fit">
-              <button onClick={toggleDatePicker}>
-                {`${dateRange[0].startDate.toLocaleDateString()} - ${dateRange[0].endDate.toLocaleDateString()}`}
+              <input
+                type="text"
+                placeholder="Description"
+                value={newTransaction.description}
+                onChange={(e) =>
+                  setNewTransaction({ ...newTransaction, description: e.target.value })
+                }
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white"
+              />
+              <input
+                type="date"
+                value={newTransaction.date}
+                onChange={(e) =>
+                  setNewTransaction({ ...newTransaction, date: e.target.value })
+                }
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white"
+              />
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={newTransaction.quantity}
+                onChange={(e) =>
+                  setNewTransaction({ ...newTransaction, quantity: e.target.value })
+                }
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white"
+              />
+              <input
+                type="number"
+                placeholder="Amount (₹)"
+                value={newTransaction.amount}
+                onChange={(e) =>
+                  setNewTransaction({ ...newTransaction, amount: e.target.value })
+                }
+                className="w-full p-3 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white"
+              />
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={handleAddTransaction}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-bold text-sm"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => setShowAddTransactionCard(false)}
+                className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-black dark:text-white px-4 py-2 rounded font-bold text-sm"
+              >
+                Cancel
               </button>
             </div>
-            {showDatePicker && (
-              <div className="absolute z-50 mt-1">
-                <DateRangePicker
-                  ranges={dateRange}
-                  onChange={handleDateChange}
-                  moveRangeOnFirstSelection={false}
-                  showMonthAndYearPickers={false}
-                  className="date-range-picker"
-                  showSelectionPreview={true}
-                  staticRanges={[]} // This hides the predefined ranges panel
-                  inputRanges={[]} // This hides the input ranges panel
-                />
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
         {/* Transactions Table */}
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full text-left border-collapse border border-gray-300 dark:border-[#555] bg-white dark:bg-[#1e1e1e] text-sm">
             <thead>
               <tr className="bg-gray-200 dark:bg-[#333] text-yellow-700 dark:text-[#ffcc00] font-bold">
-                <th className="border border-gray-300 dark:border-[#555] p-3 hidden sm:table-cell">
+                <th className="border border-gray-300 dark:border-[#555] p-3">
                   Category
                 </th>
                 <th className="border border-gray-300 dark:border-[#555] p-3">
@@ -151,38 +191,39 @@ const TransactionsHistory = () => {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((transaction, index) => (
-                <tr key={index}>
-                  <td className="border border-gray-300 dark:border-[#555] p-3">
-                    {transaction.Description || "NA"}
-                  </td>
-                  <td className="border border-gray-300 dark:border-[#555] p-3">
-                    {transaction.Item || "NA"}
-                  </td>
-                  <td className="border border-gray-300 dark:border-[#555] p-3">
-                    {new Date().toLocaleDateString()}
-                  </td>
-                  <td className="border border-gray-300 dark:border-[#555] p-3">
-                    {transaction.Quantity || "NA"}
-                  </td>
-                  <td className="border border-gray-300 dark:border-[#555] p-3">
-                    {transaction.Amount || "NA"}
+              {transactions.length > 0 ? (
+                transactions.map((transaction, index) => (
+                  <tr key={index}>
+                    <td className="border border-gray-300 dark:border-[#555] p-3">
+                      {transaction.category || "NA"}
+                    </td>
+                    <td className="border border-gray-300 dark:border-[#555] p-3">
+                      {transaction.description || "NA"}
+                    </td>
+                    <td className="border border-gray-300 dark:border-[#555] p-3">
+                      {new Date(transaction.date).toLocaleDateString() || "NA"}
+                    </td>
+                    <td className="border border-gray-300 dark:border-[#555] p-3">
+                      {transaction.quantity || "NA"}
+                    </td>
+                    <td className="border border-gray-300 dark:border-[#555] p-3">
+                      ₹{transaction.amount || "NA"}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="border border-gray-300 dark:border-[#555] p-3 text-center"
+                  >
+                    No transactions found.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
-
-        {/* Footer */}
-        <footer className="flex justify-center sm:justify-start gap-4 mt-6">
-          <button className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-5 py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm">
-            Previous
-          </button>
-          <button className="bg-yellow-500 dark:bg-[#ffcc00] text-black px-5 py-2 rounded font-bold hover:scale-105 hover:shadow-lg transition text-sm">
-            Next
-          </button>
-        </footer>
       </div>
     </>
   );

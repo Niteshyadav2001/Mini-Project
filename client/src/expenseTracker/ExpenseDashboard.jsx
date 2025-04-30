@@ -38,7 +38,6 @@ const ExpenseDashboard = () => {
   const [incomeData, setIncomeData] = useState([]);
   const [expenseData, setExpenseData] = useState([]);
 
-  // Fetch user's income and expense
   const fetchOverview = async () => {
     try {
       const response = await axios.get(GET_EXPENSE_INCOME, {
@@ -51,7 +50,6 @@ const ExpenseDashboard = () => {
     }
   };
 
-  // Fetch income data by category
   const fetchIncomeByCategory = async () => {
     try {
       const response = await axios.get(GET_INCOME_BY_CATEGORY, {
@@ -63,8 +61,6 @@ const ExpenseDashboard = () => {
       alert("Failed to fetch income data. Please try again.");
     }
   };
-
-  // Fetch expense data by category
   const fetchExpenseByCategory = async () => {
     try {
       const response = await axios.get(GET_EXPENSE_BY_CATEGORY, {

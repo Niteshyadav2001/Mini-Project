@@ -10,3 +10,6 @@ export const GET_EXPENSE_INCOME="http://localhost:3000/api/auth/user/income-expe
 export const GET_INCOME_BY_CATEGORY="http://localhost:3000/api/auth/income-by-category"
 export const GET_EXPENSE_BY_CATEGORY="http://localhost:3000/api/auth/expense-by-category"
 export const SEND_MONEY_API="http://localhost:3000/api/auth/send-money"
+export const GET_ALL_TRANSACTIONS="http://localhost:3000/api/auth/transactions"
+export const ADD_TRANSACTION="http://localhost:3000/api/auth/transactions"
+export const GET_MONTHLY_COMPARISON="http://localhost:3000/api/auth/category/monthly-comparison"
