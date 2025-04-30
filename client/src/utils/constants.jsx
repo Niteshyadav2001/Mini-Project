@@ -9,3 +9,4 @@ export const GET_EXPENSE_CATEGORIES="http://localhost:3000/api/auth/category/exp
 export const GET_EXPENSE_INCOME="http://localhost:3000/api/auth/user/income-expense"
 export const GET_INCOME_BY_CATEGORY="http://localhost:3000/api/auth/income-by-category"
 export const GET_EXPENSE_BY_CATEGORY="http://localhost:3000/api/auth/expense-by-category"
+export const SEND_MONEY_API="http://localhost:3000/api/auth/send-money"

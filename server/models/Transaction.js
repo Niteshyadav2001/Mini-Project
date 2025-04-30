@@ -10,8 +10,7 @@ const transactionSchema = new mongoose.Schema({
         required: true
     },
     categoryId: {
-        type: mongoose.Schema.Types.ObjectId,
-        refPath: 'categoryType', // Dynamic reference to Income or Expense
+        type:Number,
         required: true
     },
     categoryType: { 
@@ -25,6 +24,10 @@ const transactionSchema = new mongoose.Schema({
     },
     date: {
         type: Date,
+        required: true
+    },
+    quantity: {
+        type: Number,
         required: true
     },
     amount: {

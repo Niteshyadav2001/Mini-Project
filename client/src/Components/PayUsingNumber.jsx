@@ -1,16 +1,47 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { SEND_MONEY_API } from "../utils/constants"; // Add the API endpoint in your constants file
 
 const PayUsingNumber = () => {
   const [mobileNumber, setMobileNumber] = useState("");
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!mobileNumber || !amount) {
       alert("Please enter both mobile number and amount.");
       return;
     }
-    alert(`Sending ₹${amount} to ${mobileNumber}${message ? ` with message: "${message}"` : ""}`);
+
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        SEND_MONEY_API,
+        {
+          phoneNumber: mobileNumber,
+          amount: parseFloat(amount),
+          message,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming JWT is used
+          },
+        }
+      );
+
+      alert(response.data.message || "Money sent successfully!");
+      setMobileNumber("");
+      setAmount("");
+      setMessage("");
+    } catch (error) {
+      console.error("Error sending money:", error);
+      alert(
+        error.response?.data?.message || "Failed to send money. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,9 +82,12 @@ const PayUsingNumber = () => {
 
         <button
           onClick={handleSend}
-          className="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded transition duration-200"
+          disabled={loading}
+          className={`mt-6 w-full py-3 ${
+            loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+          } text-white text-sm font-semibold rounded transition duration-200`}
         >
-          Send
+          {loading ? "Sending..." : "Send"}
         </button>
       </div>
     </div>
